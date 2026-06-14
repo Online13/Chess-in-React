@@ -38,13 +38,13 @@ export const turn_state = {
 export type Turn = (typeof turn_state)[keyof typeof turn_state];
 
 export const variant = {
-	CLASSIC: 0,
-	CHESS960: 1,
-	CRAZYHOUSE: 2,
-	BUGHOUSE: 3,
-	KING_OF_THE_HILL: 4,
-	THREE_CHECK: 5,
-	ANTICHESS: 6,
+	CLASSIC: "classic",
+	CHESS960: "chess960",
+	CRAZYHOUSE: "crazyhouse",
+	BUGHOUSE: "bughouse",
+	KING_OF_THE_HILL: "kingofthehill",
+	THREE_CHECK: "threecheck",
+	ANTICHESS: "antichess",
 } as const;
 
 export const variant_name = {
@@ -57,4 +57,11 @@ export const variant_name = {
 	[variant.ANTICHESS]: "Antichess",
 } as const;
 
-export type Variant = (typeof variant)[keyof typeof variant];
+export type Variant =
+	| "classic"
+	| "chess960"
+	| "crazyhouse"
+	| "bughouse"
+	| "kingofthehill"
+	| "threecheck"
+	| "antichess";

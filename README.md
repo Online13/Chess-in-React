@@ -1,6 +1,6 @@
-# React-chesskit
+# Chess in React
 
-A React component library for building chess boards with support for multiple game variants.
+Clean and reusable chess game implementation in React, built with best practices, a clear architecture, and a maintainable approach.
 
 > Early development — currently being built and tested. Documentation will come later.
 
@@ -10,7 +10,7 @@ A React component library for building chess boards with support for multiple ga
 
 - [x] Reusable UI component structure
 - [x] Implement classic chess game logic
-- [x] Clean architecture
+- [ ] Clean architecture
 - [ ] Handle board rotation
 - [ ] Handle piece promotion
 - [ ] Setup service layer to support all variants

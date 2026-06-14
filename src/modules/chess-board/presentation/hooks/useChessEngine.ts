@@ -17,10 +17,10 @@ export function useChessEngine(args: Args): ChessEngine {
 	const [turn, setTurn] = useState(turn_state.WHITE);
 	const [gameState, setGameState] = useState<GameState>(game_state.ONGOING);
 	const [selectedPiece, setSelectedPiece] = useState<PieceData | null>(null);
+	const [enPassantTarget, setEnPassantTarget] = useState<number | null>(null);
 	const [squareSelectData, setSquareSelectData] = useState<
 		SquareSelectData[]
 	>([]);
-	const [enPassantTarget, setEnPassantTarget] = useState<number | null>(null);
 
 	const selectPiece = useCallback(
 		(piece: PieceData) => {

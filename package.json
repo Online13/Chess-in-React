@@ -1,5 +1,6 @@
 {
-  "name": "chess-board",
+  "name": "chess-in-react",
+  "description": "Clean and reusable chess game implementation in React, built with best practices, a clear architecture, and a maintainable approach.",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -29,7 +29,6 @@ import {
 } from "../provider";
 import type { PieceData, SquareSelectData } from "../../domain/value_objects";
 import { ChessControl } from "./control/ChessControl";
-import { defaultTheme } from "../data";
 
 // ----------------------------------------------------------
 
@@ -42,12 +41,7 @@ interface BoardProps
 	theme?: BoardTheme;
 }
 
-export function Board({
-	children,
-	board,
-	theme = defaultTheme,
-	...props
-}: BoardProps) {
+export function Board({ children, board, theme, ...props }: BoardProps) {
 	const chessEngine = useChessEngine({
 		data: props.data,
 		setData: props.setData,
@@ -56,11 +50,37 @@ export function Board({
 	const state = useMemo((): DataStore => {
 		return {
 			...props,
+			...board,
 			...chessEngine,
-			seed: board.seed,
-			variant: board.variant,
 		};
-	}, [props, chessEngine, board.seed, board.variant]);
+	}, [props, chessEngine, board]);
+
+	useImperativeHandle(
+		board.ref,
+		() => ({
+			reset() {
+				chessEngine.reset();
+			},
+		}),
+		[chessEngine],
+	);
+
+	return (
+		<BoardProvider state={state}>
+			<BoardThemeProvider state={theme}>
+				<div className="w-full h-full relative">
+					<BoardContent>{children}</BoardContent>
+				</div>
+			</BoardThemeProvider>
+		</BoardProvider>
+	);
+}
+
+/**
+ * Handle missing children
+ *
+ */
+function BoardContent({ children }: PropsWithChildren) {
 	const has = useMemo(() => {
 		const childrenArray = Children.toArray(children);
 		let hasSelectList = false,
@@ -88,29 +108,13 @@ export function Board({
 		};
 	}, [children]);
 
-	useImperativeHandle(
-		board.ref,
-		() => {
-			return {
-				reset: () => {
-					chessEngine.reset();
-				},
-			};
-		},
-		[chessEngine],
-	);
-
 	return (
-		<BoardProvider state={state}>
-			<BoardThemeProvider state={theme}>
-				<div className="w-full h-full relative">
-					{children}
-					{!has.pieceList && <Board.PieceList />}
-					{!has.selectList && <Board.SelectList />}
-					{!has.pieceSquareList && <Board.SquareList />}
-				</div>
-			</BoardThemeProvider>
-		</BoardProvider>
+		<Fragment>
+			{children}
+			{!has.pieceList && <Board.PieceList />}
+			{!has.selectList && <Board.SelectList />}
+			{!has.pieceSquareList && <Board.SquareList />}
+		</Fragment>
 	);
 }
 

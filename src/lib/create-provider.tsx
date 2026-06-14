@@ -1,12 +1,12 @@
 import { createContext, useContext, type PropsWithChildren } from "react";
 
-export function createProvider<Store>() {
-	const CustomContext = createContext<Store | null>(null);
+export function createProvider<Store>(defaultValue?: Store) {
+	const CustomContext = createContext<Store | undefined>(undefined);
 
 	function Provider({
-		state,
+		state = defaultValue,
 		children,
-	}: PropsWithChildren<{ state: Store }>) {
+	}: PropsWithChildren<{ state?: Store }>) {
 		return (
 			<CustomContext.Provider value={state}>
 				{children}
