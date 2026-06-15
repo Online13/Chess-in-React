@@ -1,6 +1,19 @@
-import { piece_color, turn_state } from "../../domain/constants";
-import { ClassicGameService } from "../../domain/services/classic";
+import { piece_color, turn_state, type Variant } from "../../domain/constants";
+import { getGameService } from "../../domain/services/game-service";
 import type { PieceData, SquareSelectData } from "../../domain/value_objects";
+
+interface View {
+	updateSelectSquares: (data: SquareSelectData[]) => void;
+	updateSelectedPiece: (piece: PieceData | null) => void;
+}
+
+interface State {
+	turn: number;
+	variant: Variant;
+	piece: PieceData;
+	data: PieceData[];
+	enPassantTarget: number | null;
+}
 
 /**
  * Handle a piece click: validate the current turn color, then compute and expose
@@ -13,33 +26,20 @@ import type { PieceData, SquareSelectData } from "../../domain/value_objects";
  * @param view.updateSelectSquares - Replaces the highlighted-squares list.
  * @param view.updateSelectedPiece - Marks the piece as the active selection.
  */
-export const selectPieceUseCase =
-	(view: {
-		updateSelectSquares: (data: SquareSelectData[]) => void;
-		updateSelectedPiece: (piece: PieceData | null) => void;
-	}) =>
-	(state: {
-		turn: number;
-		piece: PieceData;
-		data: PieceData[];
-		enPassantTarget: number | null;
-	}) => {
-		if (
-			state.turn === turn_state.WHITE &&
-			state.piece.color !== piece_color.WHITE
-		)
-			return;
-		if (
-			state.turn === turn_state.BLACK &&
-			state.piece.color !== piece_color.BLACK
-		)
-			return;
+export const selectPieceUseCase = (view: View) => (state: State) => {
+	const service = getGameService(state.variant);
+	const isNotCurrentTurnColor =
+		(state.turn === turn_state.WHITE &&
+			state.piece.color !== piece_color.WHITE) ||
+		(state.turn === turn_state.BLACK &&
+			state.piece.color !== piece_color.BLACK);
+	if (isNotCurrentTurnColor) return;
 
-		view.updateSelectedPiece(state.piece);
-		const moves = ClassicGameService.computePosssibleMoveOfPiece({
-			data: state.data,
-			position: state.piece.position,
-			enPassantTarget: state.enPassantTarget,
-		});
-		view.updateSelectSquares(moves);
-	};
+	view.updateSelectedPiece(state.piece);
+	const moves = service.computePosssibleMoveOfPiece({
+		data: state.data,
+		position: state.piece.position,
+		enPassantTarget: state.enPassantTarget,
+	});
+	view.updateSelectSquares(moves);
+};

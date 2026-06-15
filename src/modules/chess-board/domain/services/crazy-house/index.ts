@@ -1,6 +1,6 @@
 import { createDefaultPiecePositions } from "./create-default-position";
 import { createGameService } from "../base-game";
 
-export const ClassicGameService = createGameService({
+export const CrazyHouseGameService = createGameService({
 	createDefaultPiecePositions,
 });

@@ -1,14 +1,9 @@
 import { useCallback, useRef, useState } from "react";
-import { useBoard } from "../hooks/useBoard";
-import {
-	game_state,
-	variant,
-	type GameState,
-	type Variant,
-} from "../../domain/constants";
-import type { PieceData } from "../../domain/value_objects";
+import { game_state, variant, type GameState } from "../../domain/constants";
 import { Board } from "../components/Board";
 import { BoardGameStateDialog } from "@/components/ResultDialog";
+import { chessComPresets } from "../presets/chess-com-presets";
+import type { BoardHandler } from "../type";
 
 export function LabScreen() {
 	return (
@@ -18,42 +13,42 @@ export function LabScreen() {
 	);
 }
 
+const BoardControl = Board.Control;
+
 function CustomBoard() {
-	const board = useBoard({ variant: "classic" });
+	const ref = useRef<BoardHandler>(null);
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 	const [gameState, setGameState] = useState<GameState>(game_state.STALE);
-	const [data, setData] = useState<PieceData[]>(board.defaultData);
 	const handleReset = useCallback(() => {
-		board.reset();
-		setData(board.defaultData);
+		ref.current?.reset();
 		dialogRef.current?.close();
-	}, [board]);
+	}, []);
+	const handleShowModal = useCallback((state: GameState) => {
+		setGameState(state);
+		dialogRef.current?.showModal();
+	}, []);
 
 	return (
 		<div className="">
 			<div className="h-[70vh] aspect-square relative z-10">
-				<Board
-					data={data}
-					board={board}
-					setData={setData}
-					onShowModal={(state) => {
-						setGameState(state);
-						dialogRef.current?.showModal();
-					}}
+				<Board.Provider
+					variant={variant.CLASSIC}
+					theme={chessComPresets.theme}
+					onGameStateChange={handleShowModal}
 				>
-					<Board.PieceList />
-					<Board.SelectList />
-					<Board.SquareList />
-					<Board.Coordinates />
-					<Board.Control
-						onApply={() => {
-							handleReset();
-						}}
-					>
-						<Board.Control.VariantForm />
-						<Board.Control.SeedForm />
-					</Board.Control>
-				</Board>
+					<Board ref={ref}>
+						<Board.PieceList />
+						<Board.SelectList
+							render={chessComPresets.renderSelect}
+						/>
+						<Board.SquareList />
+						<Board.Coordinates />
+						<Board.Control onApply={handleReset}>
+							<BoardControl.VariantForm />
+							<BoardControl.SeedForm />
+						</Board.Control>
+					</Board>
+				</Board.Provider>
 			</div>
 			<BoardGameStateDialog
 				ref={dialogRef}

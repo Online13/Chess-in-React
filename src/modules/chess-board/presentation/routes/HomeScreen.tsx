@@ -62,10 +62,10 @@ function CustomBoard({
 	const board = useBoard({ seed, game: customGame });
 	const dialogRef = useRef<HTMLDialogElement | null>(null);
 	const [gameState, setGameState] = useState<GameState>(game_state.STALE);
-	const [data, setData] = useState<PieceData[]>(board.defaultData);
+	const [data, setData] = useState<PieceData[]>(board.getDefaultData);
 	const handleReset = useCallback(() => {
 		board.reset();
-		setData(board.defaultData);
+		setData(board.getDefaultData);
 		dialogRef.current?.close();
 	}, [board]);
 

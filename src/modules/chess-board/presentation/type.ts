@@ -1,6 +1,5 @@
-import type { ReactNode, RefObject } from "react";
+import type { ReactNode } from "react";
 import type { PieceData, SquareSelectData } from "../domain/value_objects";
-import type { GameState, Variant } from "../domain/constants";
 
 export type PieceRender = (
 	data: Pick<PieceData, "type" | "color">,
@@ -9,23 +8,6 @@ export type PieceRender = (
 export type SelectRender = (
 	data: Omit<SquareSelectData, "from"> & { theme: BoardTheme },
 ) => ReactNode;
-
-export interface ChessEngine {
-	gameState: GameState;
-	selectedPiece: PieceData | null;
-	squareSelectData: SquareSelectData[];
-	reset: () => void;
-	selectPiece: (piece: PieceData) => void;
-	selectSquare: (position: number) => void;
-	setSelectedPiece: (piece: PieceData | null) => void;
-}
-
-export interface DataStore extends ChessEngine {
-	seed: number;
-	variant: Variant;
-	data: PieceData[];
-	setData: (data: PieceData[]) => void;
-}
 
 export interface BoardTheme {
 	coordinates: {
@@ -44,14 +26,6 @@ export interface BoardTheme {
 
 export interface BoardHandler {
 	reset: () => void;
-}
-
-export interface BoardInstance {
-	variant: Variant;
-	seed: number;
-	ref: RefObject<BoardHandler | null>;
-	reset: () => void;
-	defaultData: () => PieceData[];
 }
 
 export interface Presets {

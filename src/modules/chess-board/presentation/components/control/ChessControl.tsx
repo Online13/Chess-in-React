@@ -8,7 +8,7 @@ import { Input, Popover, Select } from "@base-ui/react";
 import clsx from "clsx";
 import { CheckIcon, ChevronsUpDownIcon, Settings } from "lucide-react";
 import { useState, type PropsWithChildren } from "react";
-import { useBoardData } from "../../provider";
+import { useBoardStore } from "../../stores/board-store/hook";
 
 interface ChessControlStore {
 	seed: number;
@@ -27,12 +27,11 @@ interface Props {
 }
 
 export function ChessControl(props: PropsWithChildren<Props>) {
-	const board = useBoardData();
+	const seedValue = useBoardStore((state) => state.seed);
+	const variantValue = useBoardStore((state) => state.variant);
 	const [isOpen, setIsOpen] = useState(false);
-	const [seed, setSeed] = useState(board.seed);
-	const [currentVariant, setCurrentVariant] = useState<Variant>(
-		board.variant,
-	);
+	const [seed, setSeed] = useState(seedValue);
+	const [currentVariant, setCurrentVariant] = useState<Variant>(variantValue);
 
 	return (
 		<ControlProvider

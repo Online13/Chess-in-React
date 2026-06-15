@@ -1,122 +1,56 @@
 import clsx from "clsx";
 import {
-	Children,
 	Fragment,
-	isValidElement,
+	memo,
+	useCallback,
 	useImperativeHandle,
 	useMemo,
 	type PropsWithChildren,
 	type ReactNode,
+	type Ref,
 } from "react";
 import { SquareView } from "./SquareView";
-import { useChessEngine } from "../hooks/useChessEngine";
 import { renderSelect } from "./render/renderSelect";
 import { renderPiece } from "./render/renderPiece";
 import { renderSquare } from "./render/renderSquare";
 import type {
-	BoardInstance,
 	PieceRender,
 	SelectRender,
-	DataStore,
 	BoardTheme,
+	BoardHandler,
 } from "../type";
-import { case_type, type GameState } from "../../domain/constants";
-import {
-	BoardProvider,
-	BoardThemeProvider,
-	useBoardData,
-	useBoardTheme,
-} from "../provider";
+import { case_type, metadata } from "../../domain/constants";
 import type { PieceData, SquareSelectData } from "../../domain/value_objects";
 import { ChessControl } from "./control/ChessControl";
+import { getPosition } from "../../domain/services/position";
+import { useBoardStore } from "../stores/board-store/hook";
+import { BoardProvider } from "../stores/board-store/provider";
+import { useSelectPiece } from "../hooks/useSelectPiece";
+import { useSelectSquare } from "../hooks/useSelectSquare";
 
 // ----------------------------------------------------------
 
 const squares = Array.from({ length: 8 * 8 }, (_, i) => i);
 
-interface BoardProps
-	extends PropsWithChildren, Pick<DataStore, "data" | "setData"> {
-	onShowModal?: (gameState: GameState) => void;
-	board: BoardInstance;
-	theme?: BoardTheme;
-}
-
-export function Board({ children, board, theme, ...props }: BoardProps) {
-	const chessEngine = useChessEngine({
-		data: props.data,
-		setData: props.setData,
-		showModal: props.onShowModal,
-	});
-	const state = useMemo((): DataStore => {
-		return {
-			...props,
-			...board,
-			...chessEngine,
-		};
-	}, [props, chessEngine, board]);
-
+export function Board({
+	ref,
+	children,
+}: PropsWithChildren<{ ref: Ref<BoardHandler> }>) {
+	const reset = useBoardStore((state) => state.reset);
 	useImperativeHandle(
-		board.ref,
+		ref,
 		() => ({
 			reset() {
-				chessEngine.reset();
+				reset();
 			},
 		}),
-		[chessEngine],
+		[reset],
 	);
 
-	return (
-		<BoardProvider state={state}>
-			<BoardThemeProvider state={theme}>
-				<div className="w-full h-full relative">
-					<BoardContent>{children}</BoardContent>
-				</div>
-			</BoardThemeProvider>
-		</BoardProvider>
-	);
+	return <div className="w-full h-full relative">{children}</div>;
 }
 
-/**
- * Handle missing children
- *
- */
-function BoardContent({ children }: PropsWithChildren) {
-	const has = useMemo(() => {
-		const childrenArray = Children.toArray(children);
-		let hasSelectList = false,
-			hasPieceList = false,
-			hasPieceSquareList = false;
-		for (const child of childrenArray) {
-			if (!isValidElement(child)) continue;
-			switch (child.type) {
-				case SelectList:
-					hasSelectList = true;
-					break;
-				case PieceList:
-					hasPieceList = true;
-					break;
-				case SquareList:
-					hasPieceSquareList = true;
-					break;
-			}
-		}
-
-		return {
-			pieceList: hasPieceList,
-			selectList: hasSelectList,
-			pieceSquareList: hasPieceSquareList,
-		};
-	}, [children]);
-
-	return (
-		<Fragment>
-			{children}
-			{!has.pieceList && <Board.PieceList />}
-			{!has.selectList && <Board.SelectList />}
-			{!has.pieceSquareList && <Board.SquareList />}
-		</Fragment>
-	);
-}
+Board.Provider = BoardProvider;
 
 // -----------------------------------------------------------------
 
@@ -140,8 +74,8 @@ interface PieceListProps {
 	render?: PieceRender;
 }
 function PieceList(props: PieceListProps) {
-	const board = useBoardData();
-	return board.data.map((piece) => (
+	const boardData = useBoardStore((state) => state.data);
+	return boardData.map((piece) => (
 		<Board.Piece key={piece.id} {...piece} render={props.render} />
 	));
 }
@@ -149,8 +83,8 @@ interface SelectListProps {
 	render?: SelectRender;
 }
 function SelectList({ render }: SelectListProps) {
-	const board = useBoardData();
-	return board.squareSelectData.map((select) => (
+	const squareSelectData = useBoardStore((state) => state.squareSelectData);
+	return squareSelectData.map((select) => (
 		<Board.Select key={select.position} {...select} render={render} />
 	));
 }
@@ -166,61 +100,75 @@ interface SquareProps {
 	render?: SquareviewRender;
 }
 
-Board.Square = function Square({
+Board.Square = memo(function Square({
 	position,
 	render = renderSquare,
 }: SquareProps) {
-	const theme = useBoardTheme();
-	const { x, y } = SquareView.getPosition(position);
+	const theme = useBoardStore((state) => state.theme);
+	const { x, y } = getPosition(position);
 	const black = (x + y) % 2 !== 0;
+	const Render = useMemo(
+		() => render({ x, y, black, theme }),
+		[x, y, black, theme, render],
+	);
 	return (
-		<SquareView
-			zIndex={10}
-			position={position}
-			metadata={{ type: "square" }}
-		>
-			{render({ x, y, black, theme })}
+		<SquareView zIndex={10} position={position} metadata={metadata.SQUARE}>
+			{Render}
 		</SquareView>
 	);
-};
+});
 
 interface PieceProps extends PieceData {
 	render?: PieceRender;
 }
 
-Board.Piece = function Piece({ render = renderPiece, ...piece }: PieceProps) {
-	const board = useBoardData();
+Board.Piece = memo(function Piece({
+	render = renderPiece,
+	...piece
+}: PieceProps) {
+	const selectPiece = useSelectPiece();
+	const handleSelectPiece = useCallback(() => {
+		selectPiece(piece);
+	}, [selectPiece, piece]);
+	const Render = useMemo(() => render(piece), [piece, render]);
 	return (
 		<SquareView
 			zIndex={30}
+			onClick={handleSelectPiece}
 			position={piece.position}
-			metadata={{ type: "piece" }}
+			metadata={metadata.PIECE}
 			className={clsx(["flex justify-center items-center text-4xl"])}
-			onClick={() => board.selectPiece(piece)}
 		>
-			{render(piece)}
+			{Render}
 		</SquareView>
 	);
-};
+});
 
-Board.Select = function Select({
+Board.Select = memo(function Select({
 	type,
 	position,
 	render = renderSelect,
 }: SquareSelectData & { render?: SelectRender }) {
-	const board = useBoardData();
-	const theme = useBoardTheme();
+	const selectSquare = useSelectSquare();
+	const theme = useBoardStore((state) => state.theme);
+	const handleSelectSquare = useCallback(() => {
+		selectSquare(position);
+	}, [selectSquare, position]);
+	const Render = useMemo(
+		() => render({ position, type, theme }),
+		[position, type, theme, render],
+	);
 	return (
 		<SquareView
-			zIndex={type === case_type.THREAT ? 40 : 20}
 			position={position}
-			metadata={{ type: "select" }}
-			onClick={() => board.selectSquare(position)}
+			onClick={handleSelectSquare}
+			metadata={metadata.SELECT}
+			zIndex={type === case_type.THREAT ? 40 : 20}
 		>
-			{render({ position, type, theme })}
+			{Render}
 		</SquareView>
 	);
-};
+});
 
 // -----------------------------------------------------------------
 
@@ -233,7 +181,7 @@ interface CoordinatesProps {
 Board.RowCoordinates = function RowCoordinates({
 	inside = false,
 }: CoordinatesProps) {
-	const theme = useBoardTheme();
+	const theme = useBoardStore((state) => state.theme);
 	return (
 		<div
 			className={clsx([
@@ -268,7 +216,7 @@ Board.RowCoordinates = function RowCoordinates({
 Board.ColumnCoordinates = function ColumnCoordinates({
 	inside = false,
 }: CoordinatesProps) {
-	const theme = useBoardTheme();
+	const theme = useBoardStore((state) => state.theme);
 	return (
 		<div
 			className={clsx([

@@ -1,19 +1,18 @@
-import { useCallback, useRef } from "react";
-import type { BoardHandler, BoardInstance } from "../type";
-import type { PieceData } from "../../domain/value_objects";
+import { useCallback, useMemo, useRef } from "react";
+import type { BoardHandler } from "../type";
 import { GameService } from "../../domain/services/game-service";
 import type { VariantOption } from "../../domain/type";
 
-
 const defaultOption: VariantOption = { variant: "classic" };
 
-export function useBoard(option: VariantOption = defaultOption): BoardInstance {
+export function useBoard(option: VariantOption = defaultOption) {
+	const variant = option.variant;
+	const seed = option.seed ?? 0;
 	const ref = useRef<BoardHandler>(null);
 	const reset = useCallback(() => {
 		ref.current?.reset();
 	}, []);
-
-	const createData = useCallback((): PieceData[] => {
+	const data = useMemo(() => {
 		const service = GameService[option.variant];
 		if (!service) {
 			throw new Error(`Game variant ${option.variant} is not supported.`);
@@ -22,11 +21,14 @@ export function useBoard(option: VariantOption = defaultOption): BoardInstance {
 		return service.createDefaultPiecePositions(option.seed);
 	}, [option]);
 
-	return {
-		ref,
-		reset,
-		defaultData: createData,
-		variant: option.game,
-		seed: option.seed,
-	};
+	return useMemo(
+		() => ({
+			ref,
+			seed,
+			reset,
+			variant,
+			data,
+		}),
+		[data, reset, seed, variant],
+	);
 }

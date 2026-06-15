@@ -1,5 +1,6 @@
 import clsx from "clsx";
-import type { ComponentProps } from "react";
+import { memo, type ComponentProps } from "react";
+import { getPosition } from "../../domain/services/position";
 
 interface Props extends ComponentProps<"div"> {
 	position: number;
@@ -7,8 +8,13 @@ interface Props extends ComponentProps<"div"> {
 	metadata?: { type: string };
 }
 
-export function SquareView({ position, zIndex, metadata, ...props }: Props) {
-	const { x, y } = SquareView.getPosition(position);
+export const SquareView = memo(function SquareViewBase({
+	position,
+	zIndex,
+	metadata,
+	...props
+}: Props) {
+	const { x, y } = getPosition(position);
 	return (
 		<div
 			{...props}
@@ -28,11 +34,4 @@ export function SquareView({ position, zIndex, metadata, ...props }: Props) {
 			])}
 		/>
 	);
-}
-
-SquareView.getPosition = function (position: number) {
-	const x = position! % 8;
-	const y = Math.floor(position! / 8);
-
-	return { x, y };
-};
+});

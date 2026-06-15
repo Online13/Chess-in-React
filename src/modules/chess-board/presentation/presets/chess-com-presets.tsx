@@ -28,7 +28,7 @@ const renderSelect: SelectRender = ({ type }) => {
 		>
 			{type === case_type.SQUARE && (
 				<div
-					className="w-4 h-4 rounded-full"
+					className="w-8 h-8 rounded-full"
 					style={{
 						backgroundColor: "rgba(0,0,0,.14)",
 					}}

@@ -1,10 +1,13 @@
-export type VariantOption =
-	| { variant: "classic" }
-	| { variant: "chess960"; seed: number }
-	| { variant: "crazyhouse" }
-	| { variant: "bughouse" }
-	| { variant: "kingofthehill" }
-	| { variant: "threecheck" }
-	| { variant: "antichess" };
+export type VariantOption = {
+	variant: Variant;
+	seed?: number;
+};
 
-export type Variant = VariantOption["variant"];
+export type Variant =
+	| "classic"
+	| "chess960"
+	| "crazyhouse"
+	| "bughouse"
+	| "kingofthehill"
+	| "threecheck"
+	| "antichess";
