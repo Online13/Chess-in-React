@@ -71,3 +71,25 @@ export const metadata = {
 	PIECE: { type: "piece" } as const,
 	SELECT: { type: "select" } as const,
 };
+
+const positionX = ["A", "B", "C", "D", "E", "F", "G", "H"] as const;
+const positionY = ["1", "2", "3", "4", "5", "6", "7", "8"] as const;
+
+type Coordinate = `${(typeof positionX)[number]}${(typeof positionY)[number]}`;
+
+export const position = Array.from<null, Coordinate>(
+	{ length: 64 },
+	(_, index) => {
+		const x = positionX[index % 8];
+		const y = positionY[7 - Math.floor(index / 8)];
+		return `${x}${y}`;
+	},
+).reduce(
+	(acc, pos, index) => {
+		acc[pos] = index;
+		return acc;
+	},
+	{} as Record<Coordinate, number>,
+);
+
+console.log(position);

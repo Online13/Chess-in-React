@@ -1,11 +1,11 @@
 import clsx from "clsx";
 import { memo, type ComponentProps } from "react";
-import { getPosition } from "../../domain/services/position";
+import { useDisplayPosition } from "../hooks/useDisplayPosition";
 
 interface Props extends ComponentProps<"div"> {
 	position: number;
 	zIndex?: number;
-	metadata?: { type: string };
+	metadata: { type: string };
 }
 
 export const SquareView = memo(function SquareViewBase({
@@ -14,13 +14,13 @@ export const SquareView = memo(function SquareViewBase({
 	metadata,
 	...props
 }: Props) {
-	const { x, y } = getPosition(position);
+	const { x, y } = useDisplayPosition(position);
 	return (
 		<div
 			{...props}
 			data-x={x}
 			data-y={y}
-			data-type={metadata?.type}
+			data-type={metadata.type}
 			style={{
 				transform: `translate(${x * 100}%, ${y * 100}%)`,
 				zIndex,

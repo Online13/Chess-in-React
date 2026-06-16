@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { selectSquareUseCase } from "../../application/use-cases/select-square-use-case";
 import { useBoardStore } from "../stores/board-store/hook";
+import { Result } from "../../domain/services/result-type";
 
 export function useSelectSquare() {
 	const setData = useBoardStore((state) => state.setData);
@@ -10,6 +11,7 @@ export function useSelectSquare() {
 	const setEnPassantTarget = useBoardStore(
 		(state) => state.setEnPassantTarget,
 	);
+	const setPromotionPiece = useBoardStore((state) => state.setPromotionPiece);
 	const nextTurn = useBoardStore((state) => state.nextTurn);
 	const onGameStateChange = useBoardStore((state) => state.onGameStateChange);
 	const getSelectSquareState = useBoardStore(
@@ -18,7 +20,8 @@ export function useSelectSquare() {
 	return useCallback(
 		(position: number) => {
 			const currentState = getSelectSquareState();
-			if (!currentState.selectedPiece) return;
+			if (!currentState.selectedPiece)
+				return Result.error({ code: "NO_PIECE_SELECTED" });
 			const execute = selectSquareUseCase({
 				showModal: onGameStateChange ?? (() => {}),
 				updatePieces: setData,
@@ -26,15 +29,22 @@ export function useSelectSquare() {
 				updateSelectedPiece: setSelectedPiece,
 				updateSelectSquares: setSelectSquares,
 				updateEnPassantTarget: setEnPassantTarget,
+				updatePromotionPiece: setPromotionPiece,
 				nextTurn: nextTurn,
 			});
-			execute({
+			const result = execute({
 				position,
 				data: currentState.data,
 				variant: currentState.variant,
 				selectedPiece: currentState.selectedPiece,
 				enPassantTarget: currentState.enPassantTarget,
+				promotionPiece: currentState.promotionPiece,
 			});
+			if (result && result.isFailure()) {
+				return result;
+			}
+
+			return Result.success(undefined);
 		},
 		[
 			getSelectSquareState,
@@ -43,6 +53,7 @@ export function useSelectSquare() {
 			setData,
 			setEnPassantTarget,
 			setGameState,
+			setPromotionPiece,
 			setSelectSquares,
 			setSelectedPiece,
 		],

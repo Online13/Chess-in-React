@@ -1,5 +1,6 @@
 import { case_type, piece_type } from "../../constants";
 import type { PieceData, SquareSelectData } from "../../value_objects";
+import { Result } from "../result-type";
 import { computePosssibleMoveOfPiece } from "./rules-calculate-possible-moves";
 import { toPosition } from "./utils";
 
@@ -17,12 +18,18 @@ export function selectSquare(args: {
 	selectData: SquareSelectData;
 	data: PieceData[];
 	enPassantTarget?: number | null;
-}): PieceData[] {
+}) {
 	const moving = args.data.find(
 		(item) => item.position === args.selectData.from.position,
 	);
-	if (!moving) return args.data;
-	if (moving.position === args.selectData.position) return args.data;
+	if (!moving)
+		return Result.error({
+			code: "MOVING_PIECE_NOT_FOUND",
+		});
+	if (moving.position === args.selectData.position)
+		return Result.error({
+			code: "CANNOT_MOVE_TO_SAME_SQUARE",
+		});
 
 	const possibleMoves = computePosssibleMoveOfPiece({
 		position: moving.position,
@@ -34,12 +41,18 @@ export function selectSquare(args: {
 			move.position === args.selectData.position &&
 			(move.type === case_type.SQUARE || move.type === case_type.THREAT),
 	);
-	if (!isAllowed) return args.data;
+	if (!isAllowed)
+		return Result.error({
+			code: "MOVE_NOT_ALLOWED",
+		});
 
 	const target = args.data.find(
 		(item) => item.position === args.selectData.position,
 	);
-	if (target && target.color === moving.color) return args.data;
+	if (target && target.color === moving.color)
+		return Result.error({
+			code: "CANNOT_CAPTURE_OWN_PIECE",
+		});
 
 	let newData = args.data
 		.filter((item) => item.position !== args.selectData.position)
@@ -94,5 +107,5 @@ export function selectSquare(args: {
 		newData = newData.filter((item) => item.position !== capturedPos);
 	}
 
-	return newData;
+	return Result.success(newData);
 }

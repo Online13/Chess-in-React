@@ -4,6 +4,7 @@ import {
 	turn_state,
 	variant,
 	type GameState,
+	type PieceType,
 	type Turn,
 	type Variant,
 } from "../../../domain/constants";
@@ -24,8 +25,10 @@ interface State {
 	turn: Turn;
 	enPassantTarget: number | null;
 	gameState: GameState;
+	promotionPiece: PieceData | null;
 	selectedPiece: PieceData | null;
 	squareSelectData: SquareSelectData[];
+	flipped: boolean;
 	onGameStateChange?: (gameState: GameState) => void;
 }
 
@@ -38,7 +41,10 @@ interface Action {
 	setData: (data: PieceData[]) => void;
 	setGameState: (gameState: GameState) => void;
 	setEnPassantTarget: (position: number | null) => void;
+	setPromotionPiece: (piece: PieceData | null) => void;
+	setFlipped: (flipped: boolean) => void;
 	nextTurn: () => void;
+	promotePawn: (position: number, newType: PieceType, newPosition: number) => void;
 	getSelectPieceState: () => {
 		piece: PieceData | null;
 		turn: Turn;
@@ -51,12 +57,15 @@ interface Action {
 		variant: Variant;
 		selectedPiece: PieceData | null;
 		enPassantTarget: number | null;
+		promotionPiece: PieceData | null;
 	};
+	getPieceById: (id: string) => PieceData | null;
 }
 
 export interface CreateBoardStoreArgs extends VariantOption {
 	data?: PieceData[];
 	theme?: BoardTheme;
+	flipped?: boolean;
 	onGameStateChange?: (gameState: GameState) => void;
 }
 
@@ -76,11 +85,15 @@ export const createBoardStore = (args: CreateBoardStoreArgs) => {
 		theme: args.theme || defaultTheme,
 		gameState: game_state.ONGOING,
 		onGameStateChange: args.onGameStateChange,
+		promotionPiece: null,
+		flipped: args.flipped ?? false,
 	};
 
 	if (!Array.isArray(args.data)) {
 		const service = getGameService(args.variant);
 		defaultState.data = service.createDefaultPiecePositions(args.seed);
+	} else {
+		defaultState.data = args.data;
 	}
 
 	return createStore<BoardState>((set, get) => ({
@@ -96,6 +109,8 @@ export const createBoardStore = (args: CreateBoardStoreArgs) => {
 		setEnPassantTarget: (position) => set({ enPassantTarget: position }),
 		setSelectSquares: (position) => set({ squareSelectData: position }),
 		setSelectedPiece: (piece) => set({ selectedPiece: piece }),
+		setPromotionPiece: (piece) => set({ promotionPiece: piece }),
+		setFlipped: (flipped) => set({ flipped }),
 		getSelectPieceState: () => {
 			const state = get();
 			return {
@@ -113,7 +128,30 @@ export const createBoardStore = (args: CreateBoardStoreArgs) => {
 				variant: state.variant,
 				selectedPiece: state.selectedPiece,
 				enPassantTarget: state.enPassantTarget,
+				promotionPiece: state.promotionPiece,
 			};
+		},
+		getPieceById: (id) => {
+			const state = get();
+			return (
+				state.data.find((piece) => piece.id === parseInt(id)) || null
+			);
+		},
+		promotePawn: (position, newType, newPosition) => {
+			set((state) => {
+				const newData = [...state.data];
+				const pieceIndex = newData.findIndex(
+					(p) => p.position === position,
+				);
+				if (pieceIndex !== -1) {
+					newData[pieceIndex] = {
+						...newData[pieceIndex],
+						type: newType,
+						position: newPosition,
+					};
+				}
+				return { data: newData };
+			});
 		},
 	}));
 };

@@ -1,10 +1,12 @@
 import { piece_color, turn_state, type Variant } from "../../domain/constants";
 import { getGameService } from "../../domain/services/game-service";
+import { Result } from "../../domain/services/result-type";
 import type { PieceData, SquareSelectData } from "../../domain/value_objects";
 
 interface View {
 	updateSelectSquares: (data: SquareSelectData[]) => void;
 	updateSelectedPiece: (piece: PieceData | null) => void;
+	updatePromotionPiece: (piece: PieceData | null) => void;
 }
 
 interface State {
@@ -27,14 +29,18 @@ interface State {
  * @param view.updateSelectedPiece - Marks the piece as the active selection.
  */
 export const selectPieceUseCase = (view: View) => (state: State) => {
+	view.updatePromotionPiece(null);
 	const service = getGameService(state.variant);
 	const isNotCurrentTurnColor =
 		(state.turn === turn_state.WHITE &&
 			state.piece.color !== piece_color.WHITE) ||
 		(state.turn === turn_state.BLACK &&
 			state.piece.color !== piece_color.BLACK);
-	if (isNotCurrentTurnColor) return;
+	if (isNotCurrentTurnColor) {
+		return Result.error({ code: "PIECE_NOT_OF_CURRENT_TURN" });
+	}
 
+	view.updatePromotionPiece(null);
 	view.updateSelectedPiece(state.piece);
 	const moves = service.computePosssibleMoveOfPiece({
 		data: state.data,
@@ -42,4 +48,5 @@ export const selectPieceUseCase = (view: View) => (state: State) => {
 		enPassantTarget: state.enPassantTarget,
 	});
 	view.updateSelectSquares(moves);
+	return Result.success(undefined);
 };

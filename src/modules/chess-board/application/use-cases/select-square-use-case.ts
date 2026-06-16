@@ -1,10 +1,13 @@
 import {
 	case_type,
 	game_state,
+	piece_color,
+	piece_type,
 	type GameState,
 	type Variant,
 } from "../../domain/constants";
 import { getGameService } from "../../domain/services/game-service";
+import { Result } from "../../domain/services/result-type";
 import type { PieceData, SquareSelectData } from "../../domain/value_objects";
 
 interface View {
@@ -13,6 +16,7 @@ interface View {
 	updateEnPassantTarget: (target: number | null) => void;
 	updateSelectedPiece: (piece: PieceData | null) => void;
 	updateGameState: (state: GameState) => void;
+	updatePromotionPiece: (piece: PieceData | null) => void;
 	nextTurn: () => void;
 	showModal: (gameState: GameState) => void;
 }
@@ -20,9 +24,10 @@ interface View {
 interface State {
 	variant: Variant;
 	position: number;
-	selectedPiece: PieceData;
 	data: PieceData[];
+	selectedPiece: PieceData;
 	enPassantTarget: number | null;
+	promotionPiece: PieceData | null;
 }
 
 /**
@@ -49,12 +54,32 @@ export const selectSquareUseCase = (view: View) => (state: State) => {
 		from: state.selectedPiece,
 	};
 
+	const isPawnPromotion =
+		state.selectedPiece.type === piece_type.PAWN &&
+		((state.selectedPiece.color === piece_color.WHITE &&
+			state.position < 8) ||
+			(state.selectedPiece.color === piece_color.BLACK &&
+				state.position >= 56));
+	if (isPawnPromotion && !state.promotionPiece) {
+		view.updatePieces(state.data);
+		view.updatePromotionPiece({
+			...state.selectedPiece,
+			position: state.position,
+		});
+		return Result.success(undefined);
+	}
 
-	const newData = service.selectSquare({
+	const result = service.selectSquare({
 		selectData,
 		data: state.data,
 		enPassantTarget: state.enPassantTarget,
 	});
+
+	if (result.isFailure()) {
+		return result;
+	}
+
+	const newData = result.getValue();
 	view.updatePieces(newData);
 	view.updateSelectSquares([]);
 
@@ -69,7 +94,8 @@ export const selectSquareUseCase = (view: View) => (state: State) => {
 		enPassantTarget: newEnPassantTarget,
 	});
 
-	if (state.position === state.selectedPiece.position) return;
+	if (state.position === state.selectedPiece.position)
+		return Result.error({ code: "CANNOT_MOVE_TO_SAME_SQUARE" });
 
 	if (
 		newGameState !== game_state.ONGOING &&
@@ -80,5 +106,7 @@ export const selectSquareUseCase = (view: View) => (state: State) => {
 
 	view.updateSelectedPiece(null);
 	view.updateGameState(newGameState);
+
 	view.nextTurn();
+	return Result.success(undefined);
 };

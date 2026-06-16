@@ -13,6 +13,9 @@ export function useSelectPiece() {
 	const updateSelectedPiece = useBoardStore(
 		(state) => state.setSelectedPiece,
 	);
+	const updatePromotionPiece = useBoardStore(
+		(state) => state.setPromotionPiece,
+	);
 
 	return useCallback(
 		(piece: PieceData) => {
@@ -20,15 +23,24 @@ export function useSelectPiece() {
 			const execute = selectPieceUseCase({
 				updateSelectSquares,
 				updateSelectedPiece,
+				updatePromotionPiece,
 			});
-			execute({
+			const result = execute({
 				piece,
 				turn: currentState.turn,
 				data: currentState.data,
 				variant: currentState.variant,
 				enPassantTarget: currentState.enPassantTarget,
 			});
+			if (result.isFailure()) {
+				return result.getError();
+			}
 		},
-		[getSelectPieceState, updateSelectSquares, updateSelectedPiece],
+		[
+			getSelectPieceState,
+			updatePromotionPiece,
+			updateSelectSquares,
+			updateSelectedPiece,
+		],
 	);
 }

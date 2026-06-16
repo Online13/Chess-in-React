@@ -9,6 +9,13 @@ export type SelectRender = (
 	data: Omit<SquareSelectData, "from"> & { theme: BoardTheme },
 ) => ReactNode;
 
+export type SquareviewRender = (data: {
+	theme: BoardTheme;
+	black: boolean;
+	x: number;
+	y: number;
+}) => ReactNode;
+
 export interface BoardTheme {
 	coordinates: {
 		foreground_black: string;
