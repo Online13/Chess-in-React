@@ -10,12 +10,13 @@ Clean and reusable chess game implementation in React, built with best practices
 
 - [x] Reusable UI component structure
 - [x] Implement classic chess game logic
-- [ ] Clean architecture
-- [ ] Handle board rotation
-- [ ] Handle piece promotion
+- [x] Clean architecture
+- [x] Handle board rotation
+- [x] Handle piece promotion
 - [ ] Setup service layer to support all variants
+  - [x] Setup service layer
+  - [ ] Implement variants
 - [ ] Write tests for game logic (once service layer is stable)
-- [ ] Migrate state management to Zustand for optimization
+- [x] Migrate state management to Zustand for optimization
 - [ ] Handle server communication
-- [ ] Create more board presets
-- [ ] Create more piece themes
+- [x] Create more board presets
