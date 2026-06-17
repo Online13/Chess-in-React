@@ -15,10 +15,16 @@ import { BoardGameStateDialog } from "@/components/ResultDialog";
 export function HomeScreen() {
 	return (
 		<div className="w-full h-full bg-[#252525] pb-60">
-			<div className="w-full px-40 pt-34 pb-12">
-				<h2 className="text-white scroll-m-20 pb-2 text-5xl font-semibold tracking-tight first:mt-0">
-					React-chesskit
+			<div className="w-full px-40 pt-34 pb-12 text-white">
+				<h2 className="scroll-m-20 pb-2 text-4xl font-semibold tracking-tight first:mt-0">
+					Chess in React
 				</h2>
+				<p className="leading-7 not-first:mt-2 max-w-180">
+					is my attempt to build a complex chess interface the React
+					way, using composition, clean architecture, and testable
+					patterns to explore how far React can go for this kind of
+					interactive UI.
+				</p>
 			</div>
 			<ScrollArea.Root>
 				<ScrollArea.Viewport className="w-full h-[68vh] pl-30">
@@ -29,6 +35,7 @@ export function HomeScreen() {
 							preset={chessComPresets}
 						/>
 						<CustomBoard
+							flipped
 							title="Lichess board preset"
 							game={variant.CHESS960}
 							preset={lichessPresets}
@@ -51,17 +58,18 @@ function CustomBoard({
 	title,
 	game,
 	preset,
+	flipped = false,
 }: {
 	title: string;
 	game: Variant;
 	preset: Presets;
+	flipped?: boolean;
 }) {
 	const ref = useRef<BoardHandler>(null);
-	const dialogRef = useRef<HTMLDialogElement | null>(null);
-	const [gameState, setGameState] = useState<GameState>(game_state.STALE);
+	const [gameState, setGameState] = useState<GameState>(game_state.ONGOING);
 	const handleReset = useCallback(() => {
 		ref.current?.reset();
-		dialogRef.current?.close();
+		setGameState(game_state.ONGOING);
 	}, []);
 
 	return (
@@ -73,11 +81,11 @@ function CustomBoard({
 			</div>
 			<div className="w-[80%] aspect-square relative z-10">
 				<Board.Provider
+					flipped={flipped}
 					theme={preset.theme}
 					variant={game}
 					onGameStateChange={(state) => {
 						setGameState(state);
-						dialogRef.current?.showModal();
 					}}
 				>
 					<Board ref={ref}>
@@ -93,8 +101,8 @@ function CustomBoard({
 				</Board.Provider>
 			</div>
 			<BoardGameStateDialog
-				ref={dialogRef}
 				gameState={gameState}
+				onOpenChange={() => setGameState(game_state.ONGOING)}
 				onReset={handleReset}
 			/>
 		</div>
