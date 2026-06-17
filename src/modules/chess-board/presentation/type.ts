@@ -18,15 +18,23 @@ export type SquareviewRender = (data: {
 
 export interface BoardTheme {
 	coordinates: {
+		/** Label color on dark squares (inside mode) */
 		foreground_black: string;
+		/** Label color on light squares (inside mode) */
 		foreground_white: string;
+		/** Label color when coordinates are rendered outside the board */
 		foreground_outside: string;
 	};
 	square: {
+		/** Background color of light squares */
 		white: string;
+		/** Background color of dark squares */
 		black: string;
+		/** Highlight color for the last move or selected square */
 		path: string;
+		/** Highlight color for capturable squares */
 		threat: string;
+		/** Dot color for reachable squares */
 		piece: string;
 	};
 }

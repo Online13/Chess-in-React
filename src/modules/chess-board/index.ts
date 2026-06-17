@@ -15,7 +15,6 @@ import {
 	variant_name,
 } from "./domain/constants";
 import type { BoardHandler, BoardTheme, Presets } from "./presentation/type";
-import { useBoard } from "./presentation/hooks/useBoard";
 import { ClassicGameService } from "./domain/services/classic";
 
 export { Board, Piece };
@@ -39,5 +38,4 @@ export {
 	variant_name,
 };
 export { getStatusMessage };
-export { useBoard };
 export { ClassicGameService };

@@ -7,10 +7,27 @@ import {
 	type Variant,
 } from "../../domain/constants";
 import type { BoardHandler, Presets } from "../type";
-import { chessComPresets } from "../presets/chess-com-presets";
-import { lichessPresets } from "../presets/lichess-presets";
 import { Board } from "../components/Board";
 import { BoardGameStateDialog } from "@/components/ResultDialog";
+import {
+	chess24Presets,
+	chessComPresets,
+	lichessPresets,
+	nightPresets,
+	purplePresets,
+	tournamentPresets,
+	walnutPresets,
+} from "../presets";
+
+const BOARDS: { title: string; game: Variant; preset: Presets; flipped?: boolean }[] = [
+	{ title: "Chess.com", game: variant.CLASSIC, preset: chessComPresets },
+	{ title: "Lichess", game: variant.CHESS960, preset: lichessPresets, flipped: true },
+	{ title: "Night", game: variant.CLASSIC, preset: nightPresets },
+	{ title: "Tournament", game: variant.CLASSIC, preset: tournamentPresets, flipped: true },
+	{ title: "Chess24", game: variant.CLASSIC, preset: chess24Presets },
+	{ title: "Purple", game: variant.CLASSIC, preset: purplePresets, flipped: true },
+	{ title: "Walnut", game: variant.CLASSIC, preset: walnutPresets },
+];
 
 export function HomeScreen() {
 	return (
@@ -29,17 +46,9 @@ export function HomeScreen() {
 			<ScrollArea.Root>
 				<ScrollArea.Viewport className="w-full h-[68vh] pl-30">
 					<div className="flex items-center flex-nowrap">
-						<CustomBoard
-							title="Chess.com board preset"
-							game={variant.CLASSIC}
-							preset={chessComPresets}
-						/>
-						<CustomBoard
-							flipped
-							title="Lichess board preset"
-							game={variant.CHESS960}
-							preset={lichessPresets}
-						/>
+						{BOARDS.map((board) => (
+							<CustomBoard key={board.title} {...board} />
+						))}
 					</div>
 				</ScrollArea.Viewport>
 				<ScrollArea.Scrollbar

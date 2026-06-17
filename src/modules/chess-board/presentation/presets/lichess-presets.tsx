@@ -5,7 +5,7 @@ const theme: BoardTheme = {
 	coordinates: {
 		foreground_black: "#EBECD0",
 		foreground_white: "#739552",
-		foreground_outside: "hsla(0,0%,100%,.5)",
+		foreground_outside: "#FFFFFF80",
 	},
 	square: {
 		white: "#F0D9B5",
