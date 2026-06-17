@@ -15,7 +15,7 @@ import { BoardGameStateDialog } from "@/components/ResultDialog";
 export function HomeScreen() {
 	return (
 		<div className="w-full h-full bg-[#252525] pb-60">
-			<div className="w-full px-40 pt-34 pb-12 text-white">
+			<div className="w-full px-40 pt-20 pb-12 text-white">
 				<h2 className="scroll-m-20 pb-2 text-4xl font-semibold tracking-tight first:mt-0">
 					Chess in React
 				</h2>
