@@ -13,9 +13,6 @@ export function useSelectPiece() {
 	const updateSelectedPiece = useBoardStore(
 		(state) => state.setSelectedPiece,
 	);
-	const updatePromotionPiece = useBoardStore(
-		(state) => state.setPromotionPiece,
-	);
 
 	return useCallback(
 		(piece: PieceData) => {
@@ -23,7 +20,6 @@ export function useSelectPiece() {
 			const execute = selectPieceUseCase({
 				updateSelectSquares,
 				updateSelectedPiece,
-				updatePromotionPiece,
 			});
 			const result = execute({
 				piece,
@@ -38,7 +34,6 @@ export function useSelectPiece() {
 		},
 		[
 			getSelectPieceState,
-			updatePromotionPiece,
 			updateSelectSquares,
 			updateSelectedPiece,
 		],

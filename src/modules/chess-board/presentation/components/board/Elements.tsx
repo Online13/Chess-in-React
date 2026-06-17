@@ -32,11 +32,17 @@ export const BoardSquare = memo(function Square({
 	position,
 	render = renderSquare,
 }: SquareProps) {
+	const updatePromotionPiece = useBoardStore(
+		(state) => state.setPromotionPiece,
+	);
 	const props = useSquareDraggable({
 		id: `square-${position}`,
 		draggable: false,
 	});
 	const theme = useBoardStore((state) => state.theme);
+	const handleClick = useCallback(() => {
+		updatePromotionPiece(null);
+	}, [updatePromotionPiece]);
 	const Render = useMemo(() => {
 		const { x, y } = getPosition(position);
 		const black = (x + y) % 2 !== 0;
@@ -48,6 +54,7 @@ export const BoardSquare = memo(function Square({
 			zIndex={10}
 			position={position}
 			metadata={metadata.SQUARE}
+			onClick={handleClick}
 		>
 			{/* <span className="text-xl absolute top-0 left-0">{position}</span> */}
 			{Render}
@@ -64,13 +71,17 @@ export const BoardPiece = memo(function Piece({
 	...piece
 }: PieceProps) {
 	const selectPiece = useSelectPiece();
+	const updatePromotionPiece = useBoardStore(
+		(state) => state.setPromotionPiece,
+	);
 	const props = useSquareDraggable({
 		id: `piece-${piece.id}`,
 		draggable: true,
 	});
 	const handleSelectPiece = useCallback(() => {
+		updatePromotionPiece(null);
 		selectPiece(piece);
-	}, [selectPiece, piece]);
+	}, [updatePromotionPiece, selectPiece, piece]);
 	const Render = useMemo(() => render(piece), [piece, render]);
 	return (
 		<SquareView
@@ -92,14 +103,18 @@ export const BoardSelect = memo(function Select({
 	render = renderSelect,
 }: SquareSelectData & { render?: SelectRender }) {
 	const selectSquare = useSelectSquare();
+	const updatePromotionPiece = useBoardStore(
+		(state) => state.setPromotionPiece,
+	);
 	const props = useSquareDraggable({
 		id: `select-${position}`,
 		draggable: false,
 	});
 	const theme = useBoardStore((state) => state.theme);
 	const handleSelectSquare = useCallback(() => {
+		updatePromotionPiece(null);
 		selectSquare(position);
-	}, [selectSquare, position]);
+	}, [updatePromotionPiece, selectSquare, position]);
 	const Render = useMemo(
 		() => render({ position, type, theme }),
 		[position, type, theme, render],

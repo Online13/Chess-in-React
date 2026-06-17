@@ -20,3 +20,7 @@ Clean and reusable chess game implementation in React, built with best practices
 - [x] Migrate state management to Zustand for optimization
 - [ ] Handle server communication
 - [x] Create more board presets
+- [ ] Write article to present the project and its architecture
+- [ ] Add history system to allow undoing moves and viewing past game states
+- [ ] Import and export to PGN format for game analysis and sharing
+- [ ] Implement AI opponent using a chess engine like Stockfish for single-player mode

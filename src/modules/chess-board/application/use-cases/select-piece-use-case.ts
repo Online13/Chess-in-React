@@ -6,7 +6,6 @@ import type { PieceData, SquareSelectData } from "../../domain/value_objects";
 interface View {
 	updateSelectSquares: (data: SquareSelectData[]) => void;
 	updateSelectedPiece: (piece: PieceData | null) => void;
-	updatePromotionPiece: (piece: PieceData | null) => void;
 }
 
 interface State {
@@ -29,7 +28,6 @@ interface State {
  * @param view.updateSelectedPiece - Marks the piece as the active selection.
  */
 export const selectPieceUseCase = (view: View) => (state: State) => {
-	view.updatePromotionPiece(null);
 	const service = getGameService(state.variant);
 	const isNotCurrentTurnColor =
 		(state.turn === turn_state.WHITE &&
@@ -40,7 +38,6 @@ export const selectPieceUseCase = (view: View) => (state: State) => {
 		return Result.error({ code: "PIECE_NOT_OF_CURRENT_TURN" });
 	}
 
-	view.updatePromotionPiece(null);
 	view.updateSelectedPiece(state.piece);
 	const moves = service.computePosssibleMoveOfPiece({
 		data: state.data,

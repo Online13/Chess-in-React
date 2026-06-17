@@ -21,8 +21,6 @@ export function LabScreen() {
 	);
 }
 
-const BoardControl = Board.Control;
-
 // const data: PieceData[] = [
 // 	{ type: piece_type.PAWN, position: position.F2, color: piece_color.BLACK },
 // 	{ type: piece_type.KING, position: position.D8, color: piece_color.BLACK },
@@ -36,15 +34,13 @@ const BoardControl = Board.Control;
 
 function CustomBoard() {
 	const ref = useRef<BoardHandler>(null);
-	const dialogRef = useRef<HTMLDialogElement | null>(null);
-	const [gameState, setGameState] = useState<GameState>(game_state.STALE);
+	const [gameState, setGameState] = useState<GameState>(game_state.ONGOING);
 	const handleReset = useCallback(() => {
 		ref.current?.reset();
-		dialogRef.current?.close();
+		setGameState(game_state.ONGOING);
 	}, []);
 	const handleGameStateChange = useCallback((state: GameState) => {
 		setGameState(state);
-		dialogRef.current?.showModal();
 	}, []);
 
 	return (
@@ -66,16 +62,16 @@ function CustomBoard() {
 						<Board.SquareList />
 						<Board.Coordinates />
 						<Board.Control onApply={handleReset}>
-							<BoardControl.VariantForm />
-							<BoardControl.SeedForm />
+							<Board.Control.VariantForm />
+							<Board.Control.SeedForm />
 						</Board.Control>
 					</Board>
 				</Board.Provider>
 			</div>
 			<BoardGameStateDialog
-				ref={dialogRef}
 				gameState={gameState}
 				onReset={handleReset}
+				onOpenChange={() => setGameState(game_state.ONGOING)}
 			/>
 		</div>
 	);
