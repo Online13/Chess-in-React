@@ -91,5 +91,3 @@ export const position = Array.from<null, Coordinate>(
 	},
 	{} as Record<Coordinate, number>,
 );
-
-console.log(position);

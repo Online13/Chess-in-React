@@ -30,6 +30,13 @@ interface State {
 	promotionPiece: PieceData | null;
 }
 
+type Output =
+	| Result<undefined, never>
+	| Result<never, "MOVING_PIECE_NOT_FOUND">
+	| Result<never, "CANNOT_MOVE_TO_SAME_SQUARE">
+	| Result<never, "MOVE_NOT_ALLOWED">
+	| Result<never, "CANNOT_CAPTURE_OWN_PIECE">;
+
 /**
  * Handle a destination square click: execute the move, update en passant state,
  * evaluate the new game status, and advance the turn.
@@ -46,67 +53,69 @@ interface State {
  * @param view.nextTurn - Advances to the next player's turn.
  * @param view.showModal - Displays the end-game modal for terminal states.
  */
-export const selectSquareUseCase = (view: View) => (state: State) => {
-	const service = getGameService(state.variant);
-	const selectData: SquareSelectData = {
-		type: case_type.SQUARE,
-		position: state.position,
-		from: state.selectedPiece,
-	};
-
-	const isPawnPromotion =
-		state.selectedPiece.type === piece_type.PAWN &&
-		((state.selectedPiece.color === piece_color.WHITE &&
-			state.position < 8) ||
-			(state.selectedPiece.color === piece_color.BLACK &&
-				state.position >= 56));
-	if (isPawnPromotion && !state.promotionPiece) {
-		view.updatePieces(state.data);
-		view.updatePromotionPiece({
-			...state.selectedPiece,
+export const selectSquareUseCase =
+	(view: View) =>
+	(state: State): Output => {
+		const service = getGameService(state.variant);
+		const selectData: SquareSelectData = {
+			type: case_type.SQUARE,
 			position: state.position,
+			from: state.selectedPiece,
+		};
+
+		const isPawnPromotion =
+			state.selectedPiece.type === piece_type.PAWN &&
+			((state.selectedPiece.color === piece_color.WHITE &&
+				state.position < 8) ||
+				(state.selectedPiece.color === piece_color.BLACK &&
+					state.position >= 56));
+		if (isPawnPromotion && !state.promotionPiece) {
+			view.updatePieces(state.data);
+			view.updatePromotionPiece({
+				...state.selectedPiece,
+				position: state.position,
+			});
+			return Result.success(undefined);
+		}
+
+		const result = service.selectSquare({
+			selectData,
+			data: state.data,
+			enPassantTarget: state.enPassantTarget,
 		});
+
+		if (result.isFailure()) {
+			return result;
+		}
+
+		const newData = result.getValue();
+		view.updatePieces(newData);
+		view.updateSelectSquares([]);
+
+		const newEnPassantTarget = service.computeEnPassantTarget(
+			state.selectedPiece,
+			state.position,
+		);
+		view.updateEnPassantTarget(newEnPassantTarget);
+
+		const newGameState = service.getGameStatus({
+			data: newData,
+			enPassantTarget: newEnPassantTarget,
+		});
+
+		if (state.position === state.selectedPiece.position)
+			return Result.error({ code: "CANNOT_MOVE_TO_SAME_SQUARE" });
+
+		if (
+			newGameState !== game_state.ONGOING &&
+			newGameState !== game_state.CHECK
+		) {
+			view.showModal(newGameState);
+		}
+
+		view.updateSelectedPiece(null);
+		view.updateGameState(newGameState);
+
+		view.nextTurn();
 		return Result.success(undefined);
-	}
-
-	const result = service.selectSquare({
-		selectData,
-		data: state.data,
-		enPassantTarget: state.enPassantTarget,
-	});
-
-	if (result.isFailure()) {
-		return result;
-	}
-
-	const newData = result.getValue();
-	view.updatePieces(newData);
-	view.updateSelectSquares([]);
-
-	const newEnPassantTarget = service.computeEnPassantTarget(
-		state.selectedPiece,
-		state.position,
-	);
-	view.updateEnPassantTarget(newEnPassantTarget);
-
-	const newGameState = service.getGameStatus({
-		data: newData,
-		enPassantTarget: newEnPassantTarget,
-	});
-
-	if (state.position === state.selectedPiece.position)
-		return Result.error({ code: "CANNOT_MOVE_TO_SAME_SQUARE" });
-
-	if (
-		newGameState !== game_state.ONGOING &&
-		newGameState !== game_state.CHECK
-	) {
-		view.showModal(newGameState);
-	}
-
-	view.updateSelectedPiece(null);
-	view.updateGameState(newGameState);
-
-	view.nextTurn();
-	return Result.success(undefined);
-};
+	};

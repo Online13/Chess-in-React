@@ -21,14 +21,18 @@ export function Board({
 	children,
 }: PropsWithChildren<{ ref: Ref<BoardHandler> }>) {
 	const reset = useBoardStore((state) => state.reset);
+	const toggleFlippled = useBoardStore((state) => state.toggleFlippled);
 	useImperativeHandle(
 		ref,
 		() => ({
 			reset() {
 				reset();
 			},
+			flipBoard() {
+				toggleFlippled();
+			},
 		}),
-		[reset],
+		[reset, toggleFlippled],
 	);
 
 	return (

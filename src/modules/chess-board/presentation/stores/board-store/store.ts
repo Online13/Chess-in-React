@@ -43,8 +43,13 @@ interface Action {
 	setEnPassantTarget: (position: number | null) => void;
 	setPromotionPiece: (piece: PieceData | null) => void;
 	setFlipped: (flipped: boolean) => void;
+	toggleFlippled: () => void;
 	nextTurn: () => void;
-	promotePawn: (position: number, newType: PieceType, newPosition: number) => void;
+	promotePawn: (
+		position: number,
+		newType: PieceType,
+		newPosition: number,
+	) => void;
 	getSelectPieceState: () => {
 		piece: PieceData | null;
 		turn: Turn;
@@ -111,6 +116,9 @@ export const createBoardStore = (args: CreateBoardStoreArgs) => {
 		setSelectedPiece: (piece) => set({ selectedPiece: piece }),
 		setPromotionPiece: (piece) => set({ promotionPiece: piece }),
 		setFlipped: (flipped) => set({ flipped }),
+		toggleFlippled: () => {
+			set((state) => ({ flipped: !state.flipped }));
+		},
 		getSelectPieceState: () => {
 			const state = get();
 			return {

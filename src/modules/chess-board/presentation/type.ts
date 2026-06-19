@@ -41,6 +41,7 @@ export interface BoardTheme {
 
 export interface BoardHandler {
 	reset: () => void;
+	flipBoard: () => void;
 }
 
 export interface Presets {

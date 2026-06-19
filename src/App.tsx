@@ -1,7 +1,7 @@
 // ----------------------------------------------------
 
-import { HomeScreen } from "./modules/chess-board/presentation/routes/HomeScreen";
+import { LabScreen } from "./modules/chess-board/presentation/routes/LabScreen";
 
 export function App() {
-	return <HomeScreen />;
+	return <LabScreen />;
 }

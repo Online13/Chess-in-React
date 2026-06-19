@@ -16,6 +16,10 @@ interface State {
 	enPassantTarget: number | null;
 }
 
+type Output =
+	| Result<undefined, never>
+	| Result<never, "PIECE_NOT_OF_CURRENT_TURN">;
+
 /**
  * Handle a piece click: validate the current turn color, then compute and expose
  * the legal destination squares for that piece.
@@ -27,23 +31,25 @@ interface State {
  * @param view.updateSelectSquares - Replaces the highlighted-squares list.
  * @param view.updateSelectedPiece - Marks the piece as the active selection.
  */
-export const selectPieceUseCase = (view: View) => (state: State) => {
-	const service = getGameService(state.variant);
-	const isNotCurrentTurnColor =
-		(state.turn === turn_state.WHITE &&
-			state.piece.color !== piece_color.WHITE) ||
-		(state.turn === turn_state.BLACK &&
-			state.piece.color !== piece_color.BLACK);
-	if (isNotCurrentTurnColor) {
-		return Result.error({ code: "PIECE_NOT_OF_CURRENT_TURN" });
-	}
+export const selectPieceUseCase =
+	(view: View) =>
+	(state: State): Output => {
+		const service = getGameService(state.variant);
+		const isNotCurrentTurnColor =
+			(state.turn === turn_state.WHITE &&
+				state.piece.color !== piece_color.WHITE) ||
+			(state.turn === turn_state.BLACK &&
+				state.piece.color !== piece_color.BLACK);
+		if (isNotCurrentTurnColor) {
+			return Result.error({ code: "PIECE_NOT_OF_CURRENT_TURN" });
+		}
 
-	view.updateSelectedPiece(state.piece);
-	const moves = service.computePosssibleMoveOfPiece({
-		data: state.data,
-		position: state.piece.position,
-		enPassantTarget: state.enPassantTarget,
-	});
-	view.updateSelectSquares(moves);
-	return Result.success(undefined);
-};
+		view.updateSelectedPiece(state.piece);
+		const moves = service.computePosssibleMoveOfPiece({
+			data: state.data,
+			position: state.piece.position,
+			enPassantTarget: state.enPassantTarget,
+		});
+		view.updateSelectSquares(moves);
+		return Result.success(undefined);
+	};

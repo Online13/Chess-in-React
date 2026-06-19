@@ -97,7 +97,7 @@ ChessControl.VariantForm = function VariantForm() {
 				<Select.Label className="cursor-default text-sm leading-5 font-bold text-gray-900">
 					Variant
 				</Select.Label>
-				<Select.Trigger className="flex h-10 min-w-40 items-center justify-between gap-3 rounded-md border border-gray-200 pr-3 pl-3.5 text-base bg-[canvas] text-gray-900 select-none hover:bg-gray-100 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-popup-open:bg-gray-100 font-normal">
+				<Select.Trigger className="flex h-10 w-full items-center justify-between gap-3 rounded-md border border-gray-200 pr-3 pl-3.5 text-base bg-[canvas] text-gray-900 select-none hover:bg-gray-100 focus-visible:outline-2 focus-visible:-outline-offset-1 focus-visible:outline-blue-800 data-popup-open:bg-gray-100 font-normal">
 					<Select.Value
 						className="data-placeholder:opacity-60"
 						placeholder="Select apple"
